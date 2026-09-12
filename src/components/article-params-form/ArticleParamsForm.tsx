@@ -9,7 +9,6 @@ import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text';
 import type { ArticleStateType, OptionType } from 'src/constants/articleProps';
 import {
-	defaultArticleState,
 	fontSizeOptions,
 	fontFamilyOptions,
 	fontColors,
@@ -18,25 +17,28 @@ import {
 } from 'src/constants/articleProps';
 import { useDisclosure } from 'src/hooks/useDisclosure';
 
-export type setAppStateType = {
+export type SetAppStateType = {
 	setAppState: (value: ArticleStateType) => void;
+	defaultArticleState: ArticleStateType;
 };
 
-export const ArticleParamsForm = ({ setAppState }: setAppStateType) => {
-	const { isOpen, toggle, close } = useDisclosure();
+export const ArticleParamsForm = ({
+	setAppState,
+	defaultArticleState,
+}: SetAppStateType) => {
+	const { isOpen: isSidebarOpen, toggle, close } = useDisclosure();
 	const [formState, setFormState] =
 		useState<ArticleStateType>(defaultArticleState);
 	const arrowButtonRef = useRef<HTMLDivElement>(null);
 	const sideBarRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
-		if (!isOpen) return;
+		if (!isSidebarOpen) return;
 
 		const handleOutsideClick = (event: MouseEvent) => {
 			if (
 				sideBarRef.current &&
 				!sideBarRef.current.contains(event.target as Node) &&
-				sideBarRef.current &&
 				!arrowButtonRef.current?.contains(event.target as Node)
 			) {
 				close();
@@ -45,7 +47,7 @@ export const ArticleParamsForm = ({ setAppState }: setAppStateType) => {
 
 		window.addEventListener('mousedown', handleOutsideClick);
 		return () => window.removeEventListener('mousedown', handleOutsideClick);
-	}, [isOpen]);
+	}, [isSidebarOpen, close]);
 
 	const handleChange =
 		(fieldName: keyof ArticleStateType) => (value: OptionType) =>
@@ -103,11 +105,13 @@ export const ArticleParamsForm = ({ setAppState }: setAppStateType) => {
 	return (
 		<>
 			<div ref={arrowButtonRef}>
-				<ArrowButton isOpen={isOpen} onClick={toggle} />
+				<ArrowButton isOpen={isSidebarOpen} onClick={toggle} />
 			</div>
 			<aside
 				ref={sideBarRef}
-				className={clsx(styles.container, { [styles.container_open]: isOpen })}>
+				className={clsx(styles.container, {
+					[styles.container_open]: isSidebarOpen,
+				})}>
 				<form
 					className={styles.form}
 					onSubmit={handleSubmit}
